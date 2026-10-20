@@ -27,9 +27,9 @@ for x in [-.8,3.4]: cube('Window jamb',(x,3.78,2.65),(.06,.12,1.7),dark,.01)
 for z in [1.0,4.3]: cube('Window sill',(1.3,3.78,z),(2.2,.12,.06),dark,.01)
 cube('Curtain left',(-1.05,3.62,2.65),(.42,.035,1.62),accent,.05); cube('Curtain right',(3.65,3.62,2.65),(.42,.035,1.62),accent,.05)
 cyl('Curtain rod',(1.3,3.5,4.42),.025,5.0,brass); bpy.context.object.rotation_euler[1]=math.radians(90)
-cube('Artwork',(0.0,3.82,2.2),(1.0,.025,.75),art,.02); cube('Frame top',(0.0,3.77,3.03),(1.1,.025,.05),brass,.015); cube('Frame bottom',(0.0,3.77,1.37),(1.1,.025,.05),brass,.015); cube('Frame left',(-1.05,3.77,2.2),(.05,.025,.78),brass,.015); cube('Frame right',(1.05,3.77,2.2),(.05,.025,.78),brass,.015)
+cube('Artwork',(-4.68,1.65,2.45),(.025,1.0,.75),art,.02); cube('Frame top',(-4.64,1.65,3.28),(.025,1.1,.05),brass,.015); cube('Frame bottom',(-4.64,1.65,1.62),(.025,1.1,.05),brass,.015); cube('Frame left',(-4.64,.60,2.45),(.025,.05,.78),brass,.015); cube('Frame right',(-4.64,2.70,2.45),(.025,.05,.78),brass,.015)
 # rug
-rug=mat('Wool rug',(0.34,0.30,0.25),.95); cube('Rug',(0,-.1,.015),(2.9,2.0,.025),rug,.03)
+rug=mat('Wool rug',(0.34,0.30,0.25),.95); cube('Rug',(0,-.1,.045),(2.9,2.0,.025),rug,.03)
 # sofa
 cube('Sofa base',(-1.5,.4,.65),(2.0,.75,.35),cream,.16); cube('Sofa back',(-1.5,1.05,1.45),(2.0,.18,.85),cream,.14)
 for x in [-3.1,-1.5,.1]: cube('Sofa cushion',(x,.35,1.12),(.72,.62,.12),cream,.12)
@@ -38,7 +38,7 @@ for x,rot in [(-2.5,-.18),(-.65,.2)]:
 # coffee table
 cube('Table top',(1.0,-.25,.72),(1.25,.7,.10),wood,.06)
 for x in [.15,1.85]:
-  for y in [-.72,.22]: cyl('Table leg',(x,y,.36),.055,.72,dark)
+  for y in [-.72,.22]: cyl('Table leg',(x,y,.31),.055,.62,dark)
 # sideboard
 cube('Sideboard',(3.35,2.65,.8),(1.1,.42,.7),wood,.05)
 for x in [2.8,3.35,3.9]: cube('Sideboard door',(x,2.18,.8),(.22,.03,.48),dark,.02)
