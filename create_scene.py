@@ -20,7 +20,7 @@ def cyl(n, loc, r, depth, material):
     bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=r, depth=depth, location=loc); o=bpy.context.object; o.name=n; o.data.materials.append(material); return o
 
 # room shell
-cube('Floor',(0,0,-.08),(4.8,4.0,.08),wood,.02); cube('Back skirting',(0,3.84,.18),(4.75,.06,.18),dark,.02); cube('Left skirting',(-4.64,0,.18),(.06,3.8,.18),dark,.02); cube('Back wall',(0,4.0,2.6),(4.8,.08,2.7),wall,.02); cube('Left wall',(-4.8,0,2.6),(.08,4.0,2.7),wall,.02)
+cube('Floor',(0,0,-.08),(4.8,4.0,.08),wood,.02); cube('Back skirting',(0,3.84,.18),(4.75,.06,.18),dark,.02); cube('Left skirting',(-4.64,0,.18),(.06,3.8,.18),dark,.02); cube('Back wall',(0,4.0,2.6),(4.8,.08,2.7),wall,.02); cube('Ceiling',(0,0,5.35),(4.8,4.0,.08),wall,.02); cube('Left wall',(-4.8,0,2.6),(.08,4.0,2.7),wall,.02)
 # window and frame on back wall
 cube('Window recess',(1.3,3.88,2.65),(2.1,.035,1.55),glass,.01)
 for x in [-.8,3.4]: cube('Window jamb',(x,3.78,2.65),(.06,.12,1.7),dark,.01)
