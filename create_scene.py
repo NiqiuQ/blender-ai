@@ -27,7 +27,7 @@ for x in [-.8,3.4]: cube('Window jamb',(x,3.78,2.65),(.06,.12,1.7),dark,.01)
 for z in [1.0,4.3]: cube('Window sill',(1.3,3.78,z),(2.2,.12,.06),dark,.01)
 cube('Curtain left',(-1.05,3.62,2.65),(.42,.035,1.62),accent,.05); cube('Curtain right',(3.65,3.62,2.65),(.42,.035,1.62),accent,.05)
 cyl('Curtain rod',(1.3,3.5,4.42),.025,5.0,brass); bpy.context.object.rotation_euler[1]=math.radians(90)
-cube('Artwork',(0.0,3.82,2.2),(1.0,.025,.75),art,.02); cube('Artwork frame',(0.0,3.77,2.2),(1.1,.02,.85),brass,.02)
+cube('Artwork',(0.0,3.82,2.2),(1.0,.025,.75),art,.02); cube('Frame top',(0.0,3.77,3.03),(1.1,.025,.05),brass,.015); cube('Frame bottom',(0.0,3.77,1.37),(1.1,.025,.05),brass,.015); cube('Frame left',(-1.05,3.77,2.2),(.05,.025,.78),brass,.015); cube('Frame right',(1.05,3.77,2.2),(.05,.025,.78),brass,.015)
 # rug
 rug=mat('Wool rug',(0.34,0.30,0.25),.95); cube('Rug',(0,-.1,.015),(2.9,2.0,.025),rug,.03)
 # sofa
