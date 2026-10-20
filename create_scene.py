@@ -9,7 +9,7 @@ def mat(name, color, rough=0.45, metallic=0.0):
     m=bpy.data.materials.new(name); m.diffuse_color=(*color,1); m.use_nodes=True
     bs=m.node_tree.nodes.get('Principled BSDF'); bs.inputs['Base Color'].default_value=(*color,1); bs.inputs['Roughness'].default_value=rough; bs.inputs['Metallic'].default_value=metallic
     return m
-wood=mat('Warm oak',(0.24,0.09,0.035),.32); wall=mat('Lime plaster',(0.58,0.52,0.43),.8); cream=mat('Boucle upholstery',(0.72,0.66,0.55),.9); dark=mat('Charcoal metal',(0.025,0.03,0.035),.28,.7); green=mat('Plant leaves',(0.08,0.22,0.09),.75); ceramic=mat('Ceramic',(0.5,0.52,0.48),.3); glass=mat('Glass',(0.1,0.16,0.18),.12,.15)
+wood=mat('Warm oak',(0.24,0.09,0.035),.32); wall=mat('Lime plaster',(0.58,0.52,0.43),.8); cream=mat('Boucle upholstery',(0.72,0.66,0.55),.9); dark=mat('Charcoal metal',(0.025,0.03,0.035),.28,.7); green=mat('Plant leaves',(0.08,0.22,0.09),.75); ceramic=mat('Ceramic',(0.5,0.52,0.48),.3); glass=mat('Glass',(0.1,0.16,0.18),.12,.15); accent=mat('Accent fabric',(0.18,0.24,0.28),.85); brass=mat('Brushed brass',(0.42,0.22,0.06),.25,.65); art=mat('Abstract art',(0.12,0.18,0.22),.7)
 
 def cube(n, loc, scale, material, bevel=.04):
     bpy.ops.mesh.primitive_cube_add(location=loc); o=bpy.context.object; o.name=n; o.scale=scale; bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
@@ -20,16 +20,21 @@ def cyl(n, loc, r, depth, material):
     bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=r, depth=depth, location=loc); o=bpy.context.object; o.name=n; o.data.materials.append(material); return o
 
 # room shell
-cube('Floor',(0,0,-.08),(4.8,4.0,.08),wood,.02); cube('Back wall',(0,4.0,2.6),(4.8,.08,2.7),wall,.02); cube('Left wall',(-4.8,0,2.6),(.08,4.0,2.7),wall,.02)
+cube('Floor',(0,0,-.08),(4.8,4.0,.08),wood,.02); cube('Back skirting',(0,3.84,.18),(4.75,.06,.18),dark,.02); cube('Left skirting',(-4.64,0,.18),(.06,3.8,.18),dark,.02); cube('Back wall',(0,4.0,2.6),(4.8,.08,2.7),wall,.02); cube('Left wall',(-4.8,0,2.6),(.08,4.0,2.7),wall,.02)
 # window and frame on back wall
 cube('Window recess',(1.3,3.88,2.65),(2.1,.035,1.55),glass,.01)
 for x in [-.8,3.4]: cube('Window jamb',(x,3.78,2.65),(.06,.12,1.7),dark,.01)
 for z in [1.0,4.3]: cube('Window sill',(1.3,3.78,z),(2.2,.12,.06),dark,.01)
+cube('Curtain left',(-1.05,3.62,2.65),(.42,.035,1.62),accent,.05); cube('Curtain right',(3.65,3.62,2.65),(.42,.035,1.62),accent,.05)
+cyl('Curtain rod',(1.3,3.5,4.42),.025,5.0,brass); bpy.context.object.rotation_euler[1]=math.radians(90)
+cube('Artwork',(0.0,3.82,2.2),(1.0,.025,.75),art,.02); cube('Artwork frame',(0.0,3.77,2.2),(1.1,.02,.85),brass,.02)
 # rug
 rug=mat('Wool rug',(0.34,0.30,0.25),.95); cube('Rug',(0,-.1,.015),(2.9,2.0,.025),rug,.03)
 # sofa
 cube('Sofa base',(-1.5,.4,.65),(2.0,.75,.35),cream,.16); cube('Sofa back',(-1.5,1.05,1.45),(2.0,.18,.85),cream,.14)
 for x in [-3.1,-1.5,.1]: cube('Sofa cushion',(x,.35,1.12),(.72,.62,.12),cream,.12)
+for x,rot in [(-2.5,-.18),(-.65,.2)]:
+    p=cube('Accent cushion',(x,.73,1.22),(.34,.12,.34),accent,.12); p.rotation_euler[1]=rot
 # coffee table
 cube('Table top',(1.0,-.25,.72),(1.25,.7,.10),wood,.06)
 for x in [.15,1.85]:
