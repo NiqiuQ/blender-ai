@@ -39,6 +39,8 @@ for x,rot in [(-2.5,-.18),(-.65,.2)]:
 cube('Table top',(1.0,-.25,.72),(1.25,.7,.10),wood,.06)
 for x in [.15,1.85]:
   for y in [-.72,.22]: cyl('Table leg',(x,y,.31),.055,.62,dark)
+# coffee table styling
+cube('Book 1',(.55,-.18,.88),(.32,.22,.035),accent,.015); cube('Book 2',(.55,-.18,.95),(.28,.19,.035),cream,.015); cyl('Decor bowl',(1.35,.05,.9),.22,.08,ceramic)
 # sideboard
 cube('Sideboard',(3.35,2.65,.8),(1.1,.42,.7),wood,.05)
 for x in [2.8,3.35,3.9]: cube('Sideboard door',(x,2.18,.8),(.22,.03,.48),dark,.02)
