@@ -105,6 +105,8 @@ cameras = [
 scene = bpy.context.scene
 scene.render.engine = "CYCLES"
 scene.cycles.samples = 48
+# Ubuntu runners may ship Blender without OpenImageDenoiser; disable the optional denoiser so CPU Cycles renders remain reliable.
+scene.cycles.use_denoising = False
 scene.render.resolution_x = 1280
 scene.render.resolution_y = 800
 scene.render.resolution_percentage = 100
