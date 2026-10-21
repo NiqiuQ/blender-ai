@@ -26,6 +26,7 @@ jobs:
       - name: Generate blend and render three cameras
         run: |
           mkdir -p outputs/ai5
+          set -o pipefail
           blender -b -t 4 --python scripts/ai5_modern_residence.py 2>&1 | tee outputs/ai5/blender.log
       - name: Verify expected outputs
         run: |
