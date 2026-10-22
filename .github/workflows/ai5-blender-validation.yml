@@ -7,6 +7,7 @@ on:
     paths:
       - 'scripts/ai5_modern_residence.py'
       - '.github/workflows/ai5-blender-validation.yml'
+      - 'scripts/validate_ai5_outputs.py'
   workflow_dispatch:
 
 jobs:
@@ -39,6 +40,8 @@ jobs:
               assert file.exists() and file.stat().st_size > 1000, f'Missing/empty: {file}'
               print(f'OK: {file}: {file.stat().st_size} bytes')
           PY
+      - name: Validate PNG headers, resolution and blend format
+        run: python3 scripts/validate_ai5_outputs.py
       - name: Upload render evidence
         if: always()
         uses: actions/upload-artifact@v4
