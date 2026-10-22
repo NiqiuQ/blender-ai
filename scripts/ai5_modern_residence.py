@@ -46,6 +46,7 @@ def box(name, loc, scale, mat, bevel=0.0):
 box("Floor slab", (0, 0, -0.13), (9.4, 7.4, 0.26), stone)
 box("Rear wall", (0, 3.6, 1.55), (9.4, 0.18, 3.1), plaster)
 box("Left wall", (-4.6, 0, 1.55), (0.18, 7.4, 3.1), plaster)
+box("Ceiling", (0, 0, 3.15), (4.7, 3.7, 0.12), plaster)
 box("Ceiling perimeter left", (-4.0, 0, 3.08), (1.1, 7.3, 0.12), plaster)
 box("Ceiling perimeter rear", (0, 3.05, 3.08), (9.3, 1.1, 0.12), plaster)
 # Sofa, facing toward the center; furniture rests on the floor.
@@ -86,8 +87,8 @@ def area_light(name, loc, power, size):
     ob.data.shape = "DISK"
     ob.data.size = size
     ob.rotation_euler = (Vector((0,0,0.6)) - ob.location).to_track_quat("-Z", "Y").to_euler()
-area_light("Large window softbox", (0, -3.0, 3.7), 1100, 5)
-area_light("Interior bounce", (1.0, 1.5, 2.7), 500, 3)
+area_light("Large window softbox", (0, -3.0, 3.7), 700, 5)
+area_light("Interior bounce", (1.0, 1.5, 2.7), 300, 3)
 
 def camera(name, location, target, lens):
     bpy.ops.object.camera_add(location=location)
@@ -104,7 +105,7 @@ cameras = [
 ]
 scene = bpy.context.scene
 scene.render.engine = "CYCLES"
-scene.cycles.samples = 48
+scene.cycles.samples = 64
 # Ubuntu runners may ship Blender without OpenImageDenoiser; disable the optional denoiser so CPU Cycles renders remain reliable.
 scene.cycles.use_denoising = False
 scene.render.resolution_x = 1280
