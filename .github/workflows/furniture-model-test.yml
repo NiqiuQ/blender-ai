@@ -1,0 +1,23 @@
+name: Furniture model render test
+on:
+  push:
+    paths:
+      - '.github/workflows/furniture-model-test.yml'
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender
+        run: sudo apt-get update && sudo apt-get install -y blender
+      - name: Build scene and render
+        run: |
+          mkdir -p output
+          blender -b --python-expr "import bpy; bpy.ops.mesh.primitive_cube_add(); o=bpy.context.object; o.name='Test_Cube'; bpy.ops.wm.save_as_mainfile(filepath='output/furniture_test.blend'); bpy.context.scene.render.filepath='//output/test_render.png'; bpy.ops.render.render(write_still=True)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: furniture-test-output
+          path: output/
