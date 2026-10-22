@@ -47,8 +47,6 @@ box("Floor slab", (0, 0, -0.13), (9.4, 7.4, 0.26), stone)
 box("Rear wall", (0, 3.6, 1.55), (9.4, 0.18, 3.1), plaster)
 box("Left wall", (-4.6, 0, 1.55), (0.18, 7.4, 3.1), plaster)
 box("Ceiling", (0, 0, 3.15), (4.7, 3.7, 0.12), plaster)
-box("Ceiling perimeter left", (-4.0, 0, 3.08), (1.1, 7.3, 0.12), plaster)
-box("Ceiling perimeter rear", (0, 3.05, 3.08), (9.3, 1.1, 0.12), plaster)
 # Sofa, facing toward the center; furniture rests on the floor.
 box("Sofa seat", (-1.9, 1.45, 0.45), (3.1, 0.98, 0.48), fabric, 0.09)
 box("Sofa back", (-1.9, 1.98, 0.86), (3.1, 0.25, 0.9), fabric, 0.09)
@@ -105,7 +103,7 @@ cameras = [
 ]
 scene = bpy.context.scene
 scene.render.engine = "CYCLES"
-scene.cycles.samples = 64
+scene.cycles.samples = 72
 # Ubuntu runners may ship Blender without OpenImageDenoiser; disable the optional denoiser so CPU Cycles renders remain reliable.
 scene.cycles.use_denoising = False
 scene.render.resolution_x = 1280
@@ -113,6 +111,8 @@ scene.render.resolution_y = 800
 scene.render.resolution_percentage = 100
 scene.render.image_settings.file_format = "PNG"
 scene.view_settings.view_transform = "AgX"
+scene.view_settings.look = "AgX - Medium High Contrast"
+scene.view_settings.exposure = -0.35
 root = Path(bpy.path.abspath("//"))
 output = root / "outputs" / "ai5"
 output.mkdir(parents=True, exist_ok=True)
