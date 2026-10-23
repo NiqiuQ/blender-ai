@@ -97,6 +97,7 @@ jobs:
 
       - name: Publish completion notice to PR
         if: always()
+        continue-on-error: true
         uses: actions/github-script@v7
         env:
           GPU_STATUS: ${{ env.GPU_STATUS }}
