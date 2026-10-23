@@ -1,0 +1,131 @@
+name: AI-5 Blender Cycles validation
+
+on:
+  push:
+    branches:
+      - ai-5-modern-residence-modeling
+    paths:
+      - 'scripts/ai5_modern_residence.py'
+      - 'scripts/validate_ai5_outputs.py'
+      - 'scripts/write_ai5_iteration_report.py'
+      - 'docs/AI5_MULTI_STEP_ITERATION.md'
+      - '.github/workflows/ai5-blender-validation.yml'
+  workflow_dispatch:
+    inputs:
+      iteration_note:
+        description: 'Short reason for this validation/iteration'
+        required: false
+        type: string
+        default: 'Manual validation'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ai5-render-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+
+      - name: Probe runner hardware
+        shell: bash
+        run: |
+          if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L; then
+            echo "GPU_STATUS=nvidia_gpu_detected" >> "$GITHUB_ENV"
+            nvidia-smi
+          else
+            echo "GPU_STATUS=no_nvidia_gpu_detected_cpu_render_expected" >> "$GITHUB_ENV"
+            echo "No NVIDIA GPU exposed to this GitHub-hosted runner; CPU rendering is expected."
+          fi
+          python3 --version
+          uname -a
+
+      - name: Validate script syntax
+        run: |
+          python3 -m py_compile scripts/ai5_modern_residence.py
+          python3 -m py_compile scripts/validate_ai5_outputs.py
+          python3 -m py_compile scripts/write_ai5_iteration_report.py
+
+      - name: Generate blend and render three cameras
+        run: |
+          mkdir -p outputs/ai5
+          set -o pipefail
+          blender -b -t 4 --python scripts/ai5_modern_residence.py 2>&1 | tee outputs/ai5/blender.log
+
+      - name: Verify expected outputs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('outputs/ai5')
+          names = ['modern_residence_blockout.blend', 'CAM_01_Wide.png', 'CAM_02_Lounge.png', 'CAM_03_Dining.png']
+          for name in names:
+              file = p / name
+              assert file.exists() and file.stat().st_size > 1000, f'Missing/empty: {file}'
+              print(f'OK: {file}: {file.stat().st_size} bytes')
+          PY
+
+      - name: Validate PNG headers, resolution and blend format
+        run: python3 scripts/validate_ai5_outputs.py
+
+      - name: Write iteration manifest and review gate
+        if: always()
+        env:
+          GPU_STATUS: ${{ env.GPU_STATUS }}
+        run: python3 scripts/write_ai5_iteration_report.py
+
+      - name: Upload render evidence and iteration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai5-modern-residence-render
+          path: outputs/ai5/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish completion notice to PR
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          GPU_STATUS: ${{ env.GPU_STATUS }}
+          JOB_STATUS: ${{ job.status }}
+          ITERATION_NOTE: ${{ inputs.iteration_note || 'Triggered by push' }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runUrl = context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId;
+            const artifactUrl = runUrl + '#artifacts';
+            const status = process.env.JOB_STATUS || 'unknown';
+            const emoji = status === 'success' ? 'SUCCESS' : status === 'failure' ? 'FAILED' : 'FINISHED: ' + status;
+            const body = [
+              '## AI-5 Blender iteration ' + emoji,
+              '',
+              '- Branch: ' + context.ref,
+              '- Commit: ' + context.sha,
+              '- Run: ' + runUrl,
+              '- Render artifacts/logs/report: ' + artifactUrl,
+              '- GPU probe: ' + (process.env.GPU_STATUS || 'not recorded'),
+              '- Trigger note: ' + (process.env.ITERATION_NOTE || 'n/a'),
+              '',
+              'Next action: inspect all three rendered PNGs in the artifact, then continue visual review in ChatGPT. This notice does not imply visual approval.'
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: 1,
+              body
+            });
