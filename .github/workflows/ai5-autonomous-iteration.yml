@@ -1,0 +1,107 @@
+name: AI-5 Autonomous Visual Iteration
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_id:
+        description: 'OpenAI API model ID enabled for your API project (or configure repository variable OPENAI_MODEL)'
+        required: false
+        type: string
+      max_iterations:
+        description: 'Maximum render/review rounds (1-3)'
+        required: true
+        default: '2'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+  push:
+    branches:
+      - ai-5-modern-residence-modeling
+    paths:
+      - 'scripts/ai5_modern_residence.py'
+      - 'scripts/ai5_autonomous_iteration.py'
+      - '.github/workflows/ai5-autonomous-iteration.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai5-autonomous-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  iterate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ inputs.model_id || vars.OPENAI_MODEL }}
+      MAX_ITERATIONS: ${{ inputs.max_iterations || '2' }}
+    steps:
+      - name: Checkout iteration branch
+        uses: actions/checkout@v4
+
+      - name: Install Blender and inspect runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+          if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L; then
+            echo "NVIDIA GPU detected"
+            nvidia-smi
+          else
+            echo "No NVIDIA GPU exposed; this runner will render on CPU."
+          fi
+
+      - name: Validate controller syntax
+        run: |
+          python3 -m py_compile scripts/ai5_modern_residence.py
+          python3 -m py_compile scripts/ai5_autonomous_iteration.py
+
+      - name: Check API configuration without exposing credentials
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Missing repository Actions secret OPENAI_API_KEY. Add it in Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          if [ -z "$OPENAI_MODEL" ]; then
+            echo "::error::Missing model ID. Set repository variable OPENAI_MODEL or enter model_id when manually dispatching this workflow."
+            exit 1
+          fi
+          echo "API key is present (value not displayed). Model ID configured: $OPENAI_MODEL"
+
+      - name: Render, visually review, and revise in bounded loop
+        run: python3 scripts/ai5_autonomous_iteration.py
+
+      - name: Publish run summary
+        if: always()
+        env:
+          RUN_STATUS: ${{ job.status }}
+          MODEL_USED: ${{ env.OPENAI_MODEL }}
+          ROUND_LIMIT: ${{ env.MAX_ITERATIONS }}
+        run: |
+          {
+            echo "## AI-5 Autonomous Visual Iteration"
+            echo ""
+            echo "- Status: **$RUN_STATUS**"
+            echo "- Model: $MODEL_USED"
+            echo "- Round limit: $ROUND_LIMIT"
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- Evidence: download the ai5-autonomous-iteration-evidence artifact below."
+            echo ""
+            echo "The controller never pushes model-generated code. Review final_scene_script.py and all round images before committing a revision."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload all iteration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai5-autonomous-iteration-evidence
+          path: |
+            outputs/autonomous/
+            outputs/ai5/
+          if-no-files-found: warn
+          retention-days: 14
