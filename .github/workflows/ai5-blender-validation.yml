@@ -6,9 +6,22 @@ on:
       - ai-5-modern-residence-modeling
     paths:
       - 'scripts/ai5_modern_residence.py'
-      - '.github/workflows/ai5-blender-validation.yml'
       - 'scripts/validate_ai5_outputs.py'
+      - 'scripts/write_ai5_iteration_report.py'
+      - 'docs/AI5_MULTI_STEP_ITERATION.md'
+      - '.github/workflows/ai5-blender-validation.yml'
   workflow_dispatch:
+    inputs:
+      iteration_note:
+        description: 'Short reason for this validation/iteration'
+        required: false
+        type: string
+        default: 'Manual validation'
+
+# Prevent two renders from competing for the same branch at once.
+concurrency:
+  group: ai5-render-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   render:
@@ -17,18 +30,38 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
       - name: Install Blender
         run: |
           sudo apt-get update
           sudo apt-get install -y blender
           blender --version
+
+      - name: Probe runner hardware
+        shell: bash
+        run: |
+          if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L; then
+            echo "GPU_STATUS=nvidia_gpu_detected" >> "$GITHUB_ENV"
+            nvidia-smi
+          else
+            echo "GPU_STATUS=no_nvidia_gpu_detected_cpu_render_expected" >> "$GITHUB_ENV"
+            echo "No NVIDIA GPU exposed to this GitHub-hosted runner; CPU rendering is expected."
+          fi
+          python3 --version
+          uname -a
+
       - name: Validate script syntax
-        run: python3 -m py_compile scripts/ai5_modern_residence.py
+        run: |
+          python3 -m py_compile scripts/ai5_modern_residence.py
+          python3 -m py_compile scripts/validate_ai5_outputs.py
+          python3 -m py_compile scripts/write_ai5_iteration_report.py
+
       - name: Generate blend and render three cameras
         run: |
           mkdir -p outputs/ai5
           set -o pipefail
           blender -b -t 4 --python scripts/ai5_modern_residence.py 2>&1 | tee outputs/ai5/blender.log
+
       - name: Verify expected outputs
         run: |
           python3 - <<'PY'
@@ -40,9 +73,17 @@ jobs:
               assert file.exists() and file.stat().st_size > 1000, f'Missing/empty: {file}'
               print(f'OK: {file}: {file.stat().st_size} bytes')
           PY
+
       - name: Validate PNG headers, resolution and blend format
         run: python3 scripts/validate_ai5_outputs.py
-      - name: Upload render evidence
+
+      - name: Write iteration manifest and review gate
+        if: always()
+        env:
+          GPU_STATUS: ${{ env.GPU_STATUS }}
+        run: python3 scripts/write_ai5_iteration_report.py
+
+      - name: Upload render evidence and iteration report
         if: always()
         uses: actions/upload-artifact@v4
         with:
