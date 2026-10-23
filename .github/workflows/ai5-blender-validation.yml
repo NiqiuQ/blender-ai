@@ -22,7 +22,6 @@ permissions:
   contents: read
   issues: write
 
-# Prevent two renders from competing for the same branch at once.
 concurrency:
   group: ai5-render-${{ github.ref }}
   cancel-in-progress: false
@@ -96,8 +95,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      # GitHub can notify repository watchers, but it cannot push an event into
-      # the current ChatGPT conversation. This PR comment is the durable handoff.
       - name: Publish completion notice to PR
         if: always()
         uses: actions/github-script@v7
@@ -109,25 +106,25 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
-            const artifactUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}#artifacts`;
+            const runUrl = context.serverUrl + '/' + owner + '/' + repo + '/actions/runs/' + context.runId;
+            const artifactUrl = runUrl + '#artifacts';
             const status = process.env.JOB_STATUS || 'unknown';
-            const emoji = status === 'success' ? '✅' : status === 'failure' ? '❌' : '⚠️';
+            const emoji = status === 'success' ? 'SUCCESS' : status === 'failure' ? 'FAILED' : 'FINISHED: ' + status;
             const body = [
-              `## ${emoji} AI-5 Blender iteration finished: ${status.toUpperCase()}`,
+              '## AI-5 Blender iteration ' + emoji,
               '',
-              `- Branch: \`${context.ref}\``,
-              `- Commit: \`${context.sha}\``,
-              `- Run: ${runUrl}`,
-              `- Render artifacts/logs/report: ${artifactUrl}`,
-              `- GPU probe: ${process.env.GPU_STATUS || 'not recorded'}`,
-              `- Trigger note: ${process.env.ITERATION_NOTE || 'n/a'}`,
+              '- Branch: ' + context.ref,
+              '- Commit: ' + context.sha,
+              '- Run: ' + runUrl,
+              '- Render artifacts/logs/report: ' + artifactUrl,
+              '- GPU probe: ' + (process.env.GPU_STATUS || 'not recorded'),
+              '- Trigger note: ' + (process.env.ITERATION_NOTE || 'n/a'),
               '',
-              '**Next action:** inspect the three rendered PNGs in the artifact, then continue visual review in ChatGPT. This notice does not imply visual approval.',
+              'Next action: inspect all three rendered PNGs in the artifact, then continue visual review in ChatGPT. This notice does not imply visual approval.'
             ].join('\n');
             await github.rest.issues.createComment({
               owner,
               repo,
               issue_number: 1,
-              body,
+              body
             });
