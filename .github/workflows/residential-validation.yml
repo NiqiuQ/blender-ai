@@ -1,0 +1,52 @@
+name: Residential three camera validation
+on:
+  push:
+    paths:
+      - 'create_scene_rebuild.py'
+      - 'REBUILD_SPEC.md'
+      - '.github/workflows/residential-validation.yml'
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+
+      - name: Generate scene and render all cameras
+        run: |
+          rm -rf previews
+          mkdir -p previews
+          blender -b --python create_scene_rebuild.py 2>&1 | tee blender-render.log
+
+      - name: Verify required outputs
+        run: |
+          test -s interior_scene.blend
+          test -s previews/View_1.png
+          test -s previews/View_2.png
+          test -s previews/View_3.png
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          for p in sorted(Path("previews").glob("View_*.png")):
+              im = Image.open(p).convert("RGB")
+              pixels = list(im.resize((32, 32)).getdata())
+              mean = sum(sum(px) for px in pixels) / (len(pixels) * 3)
+              assert mean > 2.0, f"{p} appears black (mean={mean:.2f})"
+              print(f"{p}: {im.size}, mean={mean:.2f}")
+          PY
+
+      - name: Upload residential validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: residential-three-camera-validation
+          path: |
+            interior_scene.blend
+            previews/
+            blender-render.log
