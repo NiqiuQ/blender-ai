@@ -70,3 +70,12 @@ scene.view_settings.exposure=-0.7
 for c in cams:
     scene.camera=c; scene.render.filepath=os.path.join(OUT,c.name.replace(' ','_')+'.png'); bpy.ops.render.render(write_still=True)
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(os.path.dirname(__file__),'interior_scene.blend'))
+
+# Close the generation loop with a deterministic review pass.  The review
+# rerenders each camera and writes review_report.json; Blender exits non-zero
+# when a measurable acceptance check fails.
+import sys
+sys.path.insert(0, os.path.dirname(__file__))
+import review_scene
+if not review_scene.review():
+    raise RuntimeError('Scene review failed; inspect review_report.json')

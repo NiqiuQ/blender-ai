@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "blend_file": "/workspace/blender-ai/interior_scene.blend",
+  "checks": [
+    {
+      "name": "camera_count",
+      "status": "pass",
+      "detail": "found 3 cameras"
+    },
+    {
+      "name": "below_floor",
+      "status": "pass",
+      "detail": "no mesh origins below floor"
+    },
+    {
+      "name": "camera_validity",
+      "status": "pass",
+      "detail": "all camera transforms and lenses are valid"
+    },
+    {
+      "name": "render:View 1",
+      "status": "pass",
+      "detail": "/workspace/blender-ai/previews/View_1.png (283654 bytes)"
+    },
+    {
+      "name": "render:View 2",
+      "status": "pass",
+      "detail": "/workspace/blender-ai/previews/View_2.png (246033 bytes)"
+    },
+    {
+      "name": "render:View 3",
+      "status": "pass",
+      "detail": "/workspace/blender-ai/previews/View_3.png (251329 bytes)"
+    }
+  ],
+  "renders": [
+    "/workspace/blender-ai/previews/View_1.png",
+    "/workspace/blender-ai/previews/View_2.png",
+    "/workspace/blender-ai/previews/View_3.png"
+  ]
+}
