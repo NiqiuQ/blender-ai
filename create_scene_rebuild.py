@@ -58,7 +58,9 @@ bpy.ops.object.light_add(type='AREA', location=(-3.8,-1.5,2.5)); fill=bpy.contex
 # cameras
 def camera(name, loc, target):
     bpy.ops.object.camera_add(location=loc); c=bpy.context.object; c.name=name; c.data.lens=42; c.data.sensor_width=36; c.rotation_euler=(Vector(target)-c.location).to_track_quat('-Z','Y').to_euler(); return c
-cams=[camera('View 1',(7,-8,5.2),(0,.5,1.5)), camera('View 2',(-6,-6,3.7),(.4,.4,1.4)), camera('View 3',(0,-7.0,2.8),(0,.7,1.25))]
+# Keep every camera inside the room shell; View 2 previously sat beyond the
+# left wall, which made the wall intersect the frame as a large black slab.
+cams=[camera('View 1',(7,-8,5.2),(0,.5,1.5)), camera('View 2',(-3.7,-6,3.7),(.4,.4,1.4)), camera('View 3',(0,-7.0,2.8),(0,.7,1.25))]
 scene=bpy.context.scene; scene.render.engine='BLENDER_EEVEE_NEXT'; scene.render.resolution_x=512; scene.render.resolution_y=384; scene.render.resolution_percentage=100
 scene.render.image_settings.color_mode='RGBA'
 scene.render.engine='BLENDER_EEVEE_NEXT'
